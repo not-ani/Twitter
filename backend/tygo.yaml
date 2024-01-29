@@ -1,0 +1,4 @@
+packages:
+  - path: 'backend/db'
+    output_path: '../frontend/src/types.ts'
+    exclude_files:

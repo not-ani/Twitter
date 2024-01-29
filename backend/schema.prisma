@@ -1,0 +1,53 @@
+datasource db {
+  // could be postgresql or mysql
+  provider = "sqlite"
+  url      = "file:dev.db"
+}
+
+generator db {
+  provider = "go run github.com/steebchen/prisma-client-go"
+}
+
+model User {
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  handle      String           @id
+  displayName String
+  password    String
+  comments    Comment[]
+  tweets      Tweets[] // Changed from Tweets[] to Tweet[]
+  following   FollowRelation[] @relation("FollowerRelation")
+  followers   FollowRelation[] @relation("FollowingRelation")
+}
+
+model FollowRelation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  followerHandle  String
+  followingHandle String
+  follower        User   @relation("FollowerRelation", fields: [followerHandle], references: [handle])
+  following       User   @relation("FollowingRelation", fields: [followingHandle], references: [handle])
+
+  @@unique([followerHandle, followingHandle])
+}
+
+model Comment {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  content      String
+  author       User     @relation(fields: [authorHandle], references: [handle])
+  authorHandle String
+  tweet        Tweets   @relation(fields: [tweetId], references: [id])
+  tweetId      String
+}
+
+model Tweets {
+  id           String    @id @default(cuid())
+  content      String
+  author       User      @relation(fields: [authorHandle], references: [handle])
+  authorHandle String
+  comments     Comment[]
+}
